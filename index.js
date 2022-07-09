@@ -28,7 +28,8 @@ const port = process.env.PORT || 5000;
 const app = express();
 const corsOptions = {
    origin:"http://localhost:3000",
-   optionsSuccessStatus:200
+   optionsSuccessStatus:200,
+   method:['GET, POST, UPDATE, DELETE, PATCH']
 }
 const rateLimiter = rateLimit({
    windowMs:15 * 60 * 100,
@@ -45,14 +46,20 @@ cloudinaryUpload.config({
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(bodyParser.urlencoded({extended:false}));
-app.use(cors());
+app.use(cors(corsOptions));
+// app.use((req,res,next) =>{
+//    res.setHeader('Access-Control-Allow-Origin',"*");
+//    res.setHeader('Access-Control-Allow-Headers','Origin,X-Requested-With,Content-Type,Accept, Authorization')
+//    res.setHeader('Access-Control-Allow-Methods','GET, POST, UPDATE, DELETE, PATCH');
+//    next()
+// })
+// app.use('/uploads/images',express.static(path.join('uploads','images')))
 app.use(express.static(path.resolve(__dirname,'./client/build')));
 app.use(express.static(path.resolve(__dirname,'./client/public')));
 app.use(express.static('./public'));
 app.use(express.json());
 app.use(fileUpload()) // old Method
 app.use(fileUpload({useTempFiles:true}))
-
 // app.use(rateLimiter);
 app.use(helmet());
 app.use(xss());
@@ -69,7 +76,7 @@ if(process.env.NODE_ENV !== "production"){
    app.use(morgan('dev'))
 }
 app.use("/api/v1/auth",cors(corsOptions),rateLimiter,authRouter);
-
+// app.use(authenticateUser); 
 app.use("/api/v1/jobs",authenticateUser,jobRouter);
 
 app.use('/send',sendEmail)

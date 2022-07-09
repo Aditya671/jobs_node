@@ -4,8 +4,9 @@ import User from "../models/User.js";
 import path from 'path';
 import cloudinary from 'cloudinary';
 import fs from 'fs';
-
+import { fileUpload as middlewareFileUpload } from './../middleware/file-upload';
 const cloudImageUpload  = cloudinary.v2
+
 class AuthController {
    async register(req,res){
       const {name,email,password,location,image} = req.body;
@@ -18,7 +19,9 @@ class AuthController {
       }
       else{
          console.log(image)
-         const imgPath = uploadProfileImage(req)
+         const imgPath = this.uploadProfileImage(req)
+         middlewareFileUpload.single('image')
+         // imaPath = req.file.path            ==== for Multer
          const user = await User.create({name,email,password,location,image:imgPath});
          const token = user.createJWT();
          res.status(StatusCodes.CREATED).send({user,token});

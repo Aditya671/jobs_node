@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-
+const fs = require('fs')
 export class CustomAPIERROR extends Error{
    constructor(message){
       super(message)
@@ -18,6 +18,12 @@ export const errorHandler = (err, req, res, next) => {
       statusCode:err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
       msg:err.message || "There is an Error"
    }
+   if (req.file){
+      fs.unlink(req.file.path,(err) => {
+         default_error.msg = err.message;
+      })
+   }
+
    if(err.name === "ValidationError"){
       default_error.statusCode = StatusCodes.BAD_REQUEST;
       default_error.msg = Object.values(err.errors).map(item => {
